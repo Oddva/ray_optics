@@ -37,7 +37,7 @@ def angleBetweenUnitVectors(vec1, vec2):
     vec_closest_to_0 is the vector with its angle closest to zero
     dont need to devide by anything to get the angle since we use unit_vectors for the calculation
     """
-    return np.arccos(np.dot(vec1,vec2))
+    return np.arccos(np.dot(vec1,vec2)) #SJEKK MÅTER DER MAN BRUKER ARCTAN SIDEN DETTE GIR BÅDE NEGATIVE OG POSITIVE VERDIER
 
 
 def get_incidence_angle(self, object):

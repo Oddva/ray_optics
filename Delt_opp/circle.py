@@ -20,7 +20,7 @@ class Circle:
         self.radius = radius
 
     def plot(self):
-        plt.gca().add_patch(plt.Circle((1000,500),300, color="slategrey"))
+        plt.gca().add_patch(plt.Circle((self.x0,self.y0),self.radius, color="slategrey"))
 
     def get_perp_vec(self, x, y):
         """
@@ -44,7 +44,7 @@ class Circle:
         x1 = (-B+np.sqrt(B**2 - 4*A*C))/(2*A)
         x2 = (-B-np.sqrt(B**2 - 4*A*C))/(2*A)
         y1 = ray_obj.a*x1 + ray_obj.b
-        y2 = ray_obj.a*x2 + ray_obj.b
+        y2 = ray_obj.a*x2 + ray_obj.b                           ####SJEKK MATTEN PÅ DENNE DELEN
         v1 = [x1-ray_obj.x0,y1-ray_obj.y0] 
         v2 = [x2-ray_obj.x0,y2-ray_obj.y0]
         print("x1=",x1,"y1=",y1,"\nx2=", x2,"y2=",y2)

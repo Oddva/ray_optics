@@ -17,12 +17,12 @@ if __name__ == "__main__":
     amount_of_rays = 1
     start_angle=0
     objects = []
-    circ = circle.Circle(1000,500,1.5,300)
+    circ = circle.Circle(500,500,1.5,100)
     objects.append(circ)
     ray1 = ray.Ray(0, 500, 0.1)
     ray1.Calculated(objects)
-    fig = plt.figure(figsize=(20,10))
     plt.style.use('dark_background')
+    fig = plt.figure(figsize=(20,10))
     circ.plot()
     ray1.plot()
     plt.xlim(0,boarder_width)

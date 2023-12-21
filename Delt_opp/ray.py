@@ -23,6 +23,7 @@ class RayLine:
         # creates the precision and x-axis of the plot
         self.precision = precision
         self.x_list = np.linspace(0,2000, self.precision) #x-list should be unecesary since enumerate of y_list gives the same
+        print(len(self.x_list))
         self.a = np.tan(self.angle)
         self.b = self.y0 - self.a * self.x0
         self.y_list = self.a * self.x_list + self.b #you should not use the values before the line starts and after it ends
@@ -77,6 +78,7 @@ class Ray:
         """
         Makes a new ray_line based on the refraction of the ray.
         """
+
         incident_angle,flip = f.angleBetweenUnitVectors(obj.get_perp_vec, ray_line.unit_vec)
         new_angle = f.set_new_angle(ray_line, incident_angle,flip,obj)
         self.set_new_line(x,y,new_angle)
@@ -85,7 +87,16 @@ class Ray:
         """
         Makes a new ray_line based on the reflection of the ray.
         """
-        
+        incident_angle,flip = f.angleBetweenUnitVectors(obj.get_perp_vec, ray_line.unit_vec)
+        inv_ray_angle = f.Vec_angle(-ray_line.unit_vec)
+        obj_perp_angle = f.Vec_angle(obj.get_perp_vec(x,y))
+        if flip == True:
+            obj_perp_angle = f.Vec_angle(-obj.get_perp_vec(x,y)) #sett en getter for alle perp vektorer
+        reflection_angle = obj_perp_angle + incident_angle
+        print("reflection_angle = inv_ray_angle",reflection_angle, "==", inv_ray_angle)
+        if reflection_angle == inv_ray_angle:
+            reflection_angle = obj_perp_angle - incident_angle
+        self.set_new_line(x,y,reflection_angle)
 
     def check_collision(self, objects):
         """
@@ -111,7 +122,8 @@ class Ray:
             coll, x,y,obj = self.check_collision(objects) #this function should return a coll = false, if there is no collisions
             if coll:
                 ray_line = self.get_last_line()
+                print(ray_line.unit_vec,obj.get_perp_vec(x,y))
+                break
                 self.refraction(ray_line,x,y,obj)
                 self.reflection(ray_line,x,y,obj)
-                break
 
