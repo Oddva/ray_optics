@@ -19,7 +19,7 @@ if __name__ == "__main__":
     objects = []
     line1 = lines.Line(700, 200, 701, 800, 1.5, "green")
     line2 = lines.Line(900, 200, 901, 800, 1.5, "green")
-    circ = circle.Circle(600,600,1.5,150)
+    circ = circle.Circle(600,300,1.5,150)
     objects.append(line1)
     # objects.append(line2)
     # objects.append(circ)

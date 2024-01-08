@@ -1,16 +1,3 @@
-"""
-Functions by Oddvar
--------------------
-This should give you all the necesarry functions for the program\n\n
-Snells_law(theta_0, n_0, n_1)\n
-Vec_angle(vector)\n
-angleBetweenUnitVectors(vec1, vec2)\n
-get_incidence_angle(self, object)\n
-set_new_angle(ray_line, incident_angle, flip, object)\n
-Point_line_distance(x,y,line_obj)
-
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 precision = 2000
@@ -39,6 +26,7 @@ def Vec_angle(vector):
     """
     Returns angle of an unit vector with [x,y]
     """
+    print(vector)
     return np.arctan(vector[1]/vector[0])/(np.sqrt(vector[0]**2 + vector[1]**2))
 
 def angleBetweenUnitVectors(vec1, vec2):
@@ -89,21 +77,21 @@ def Point_line_distance(x,y,line_obj):
     d = abs((line_obj.a*x + y + line_obj.b)/(np.sqrt(line_obj.a**2 + 1)))
     return d
 
-def Boarder(y_list):
-    """
-    Returnere om en ray er innenfor området man ser på.
-    Hvis man er innenfor returnerer den False, None
-    Hvis man er utenfor returnere den True, n. Der n er hvilken iterasjon dette skjedde på.
-    Denne funksjonen skal bestemme grensen der bølger stopper.\n
-    Bølger stopper for x verdier allerede, men ikke for y verdier.\n
-    Hvis en verdi går mot evig y verdi får man problemer.\n
-    Denne klassen skal stoppe den hvis man får en y verdi over 1000.
-    """
-    for n,height in enumerate(y_list):
-        if height < 0:
-            return True, n #returnerer at den traff kanten av y grensa og hvilken iterasjon dette skjedde på
-        if height > 1000:
-            return True, n
+# def Boarder(y_list):
+#     """
+#     Returnere om en ray er innenfor området man ser på.
+#     Hvis man er innenfor returnerer den False, None
+#     Hvis man er utenfor returnere den True, n. Der n er hvilken iterasjon dette skjedde på.
+#     Denne funksjonen skal bestemme grensen der bølger stopper.\n
+#     Bølger stopper for x verdier allerede, men ikke for y verdier.\n
+#     Hvis en verdi går mot evig y verdi får man problemer.\n
+#     Denne klassen skal stoppe den hvis man får en y verdi over 1000.
+#     """
+#     for n,height in enumerate(y_list):
+#         if height < 0:
+#             return True, n #returnerer at den traff kanten av y grensa og hvilken iterasjon dette skjedde på
+#         if height > 1000:
+#             return True, n
 
 
 

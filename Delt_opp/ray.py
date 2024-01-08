@@ -15,6 +15,7 @@ class RayLine:
         self.color = color
         self.n = permativity
         self.unit_vec = unit_vec
+        print("Dette skal være enhetsvektoren: ", self.unit_vec)
         self.angle = f.Vec_angle(self.unit_vec)
         self.x0 = x0
         self.y0 = y0
@@ -23,7 +24,7 @@ class RayLine:
         self.x_list = np.linspace(x0,self.unit_vec[0]*2000, precision) #x-list should be unecesary since enumerate of y_list gives the same
         print(self.unit_vec[0])
         if self.unit_vec[0] < 0:
-            self.x_list = np.linspace(-self.unit_vec[0]*2000, x0, precision) 
+            self.x_list = np.linspace(x0, self.unit_vec[0]*2000, precision) 
         self.a = np.tan(self.angle)
         self.b = self.y0 - self.a * self.x0
         self.y_list = self.a * self.x_list + self.b #you should not use the values before the line starts and after it ends
@@ -46,6 +47,7 @@ class Ray:
     """
     Is a projectile with a start(x0,y0) and a angle(radians).
     This contains a list of lines which represents either the refractions or the reflections of a ray
+    
     """
     def __init__(self,x0,y0, ray_unit_vec):
         self.type = "ray"
@@ -99,10 +101,21 @@ class Ray:
         # del self.line_list[0] #this does not return the element removed
 
     def get_incidence_angle(self, ray_line, object, x, y):
-        """ 
+        """
         Gets the incidence angle which is always positive. 
         Since the perp vector can have two directions, flip is added to notify the user of this, 
         which will be used for other calculations.
+        
+        AI is creating summary for get_incidence_angle
+
+        Args:
+            ray_line ([object]): ray_line objects
+            object ([object]): [description]
+            x ([float]): [description]
+            y ([float]): [description]
+
+        Returns:
+            [type]: [description]
         """
         flip = False    #if flip is false then the perp_vec and ray.unit_vec have the same direction
         incident_angle = f.angleBetweenUnitVectors(object.get_perp_vec(), ray_line.unit_vec)
@@ -116,6 +129,7 @@ class Ray:
         Makes a new ray_line based on the refraction of the ray.
         """
         ref_vec = f.Snells_law_vectors(ray_line, obj)
+        print("dette er ref_vec ", ref_vec)
         new_line = self.set_new_line(x_enter,y_enter,ref_vec)
         new_line.set_name("refraction")
         print("EXIT VALUE ==", x_exit, y_exit)
@@ -135,9 +149,9 @@ class Ray:
                 # KAN BRUKE DETTE
         cosI = np.dot(ray_line.unit_vec, obj.perp_vec)  #dette cos(incidence angle)
         d_out = ray_line.unit_vec - 2.0*cosI*obj.perp_vec #dette gir den nye reflekterte vektoren
-        reflection_angle = f.Vec_angle(d_out)
-        print("vector out is: ", d_out)
-        print("reflection angle: ", reflection_angle)
+        # reflection_angle = f.Vec_angle(d_out)
+        # print("vector out is: ", d_out)
+        # print("reflection angle: ", reflection_angle)
         new_line = self.set_new_line(x,y,d_out)
         new_line.set_name("reflection")
 
@@ -171,7 +185,7 @@ class Ray:
             for ray_line in self.line_list:
                 coll, x_enter, y_enter, x_exit, y_exit, obj = self.check_collision(ray_line, objects) #this function should return a coll = false, if there is no collisions
                 if coll:
-                    self.retire_line(ray_line)
+                    self.retire_line(ray_line) #should add a method to this which shortens the current ray, when reflection and refraction is made 
                     self.remove_line(ray_line) #removes the ray_line from the list, since it should not interact with other objects anymore
                     obj.set_perp_vec(x_enter,y_enter)
                     self.refraction(ray_line, x_enter, y_enter, x_exit, y_exit, obj)
