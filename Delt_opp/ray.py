@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import functions as f
-precision = 2000
+precision = 20000
 boarder_height = 1000
 boarder_width = 2000
 
@@ -9,27 +9,37 @@ class RayLine:
     """
     Is a line which can be used for ray lines
     """
-    def __init__(self,x0,y0, angle, permativity, color):
+    def __init__(self,x0,y0, unit_vec, permativity, color):
         self.type = "rayline"
-        self.name = "x0={},y0={}".format(x0,y0)
+        self.name  = "orgin, [{}, {}]".format(round(x0), round(y0))
         self.color = color
-        self.angle = angle
         self.n = permativity
-        self.unit_vec = np.array([np.cos(angle), np.sin(angle)])
+        self.unit_vec = unit_vec
+        self.angle = f.Vec_angle(self.unit_vec)
         self.x0 = x0
         self.y0 = y0
         self.norm = np.linalg.norm(self.unit_vec) #lenght of vector, should always be 1
         self.perp_vec = np.array([-self.unit_vec[1], self.unit_vec[0]]) 
-        # creates the precision and x-axis of the plot
-        self.precision = precision
-        self.x_list = np.linspace(0,2000, self.precision) #x-list should be unecesary since enumerate of y_list gives the same
-        print(len(self.x_list))
+        self.x_list = np.linspace(x0,self.unit_vec[0]*2000, precision) #x-list should be unecesary since enumerate of y_list gives the same
+        print(self.unit_vec[0])
+        if self.unit_vec[0] < 0:
+            self.x_list = np.linspace(-self.unit_vec[0]*2000, x0, precision) 
         self.a = np.tan(self.angle)
         self.b = self.y0 - self.a * self.x0
         self.y_list = self.a * self.x_list + self.b #you should not use the values before the line starts and after it ends
         self.x1 = self.x_list[-1]
         self.y1 = self.y_list[-1]
-        print(self.y_list)
+        self.state = False
+
+    def set_name(self, name):
+        self.name = "{}, [{}, {}]".format(name, round(self.x0), round(self.y0))
+
+    def set_state(self, state):
+        """
+        bestemmer om et objekt er inni eller utenfor et et annet objekt
+        slik at man snur på permativitetene i snells lov.
+        """
+        self.state = state
 
 
 class Ray:
@@ -37,8 +47,7 @@ class Ray:
     Is a projectile with a start(x0,y0) and a angle(radians).
     This contains a list of lines which represents either the refractions or the reflections of a ray
     """
-    def __init__(self,x0,y0, angle):
-        self.state = False #var tidligere en variabel som ble brukt inne i legmer, men nå trur jeg den ikke brukes lengre
+    def __init__(self,x0,y0, ray_unit_vec):
         self.type = "ray"
         self.color = "blue"
         self.precision = precision
@@ -47,11 +56,12 @@ class Ray:
         self.y0 = y0
         self.n = 1
         self.line_list = []
-        line = RayLine(x0,y0,angle, self.n, self.color)
+        line = RayLine(x0,y0,ray_unit_vec, self.n, self.color)
         self.line_list.append(line)
+        self.retired_line_list = []
 
     def plot(self):
-        for line in self.line_list:
+        for line in self.retired_line_list:
             plt.plot(line.x_list, line.y_list, label="{}".format(line.name))
         
     def append_line(self,line):
@@ -66,64 +76,111 @@ class Ray:
         """
         return self.line_list[-1]
 
-
-    def set_new_line(self, xn, yn, angle):
+    def set_new_line(self, xn, yn, ray_unit_vec):
         """
         Should calculate a new angle using snells law
         """
-        new_line = RayLine(xn,yn,angle,self.n,self.color)
+        new_line = RayLine(xn,yn,ray_unit_vec,self.n,self.color)
         self.line_list.append(new_line)
-        
-    def refraction(self,ray_line,x,y,obj):
+        return new_line
+
+    def retire_line(self, ray_line):
+        """
+        Retires a line so it doesn't calculate intersections for the same line
+        """
+        self.retired_line_list.append(ray_line)
+
+    def remove_line(self, ray_line):
+        """
+        Removes a rat_line from the line list
+        """
+        self.line_list.remove(ray_line) #this does not involve indexing
+        # self.linelist.pop(0) #this returns the element removed
+        # del self.line_list[0] #this does not return the element removed
+
+    def get_incidence_angle(self, ray_line, object, x, y):
+        """ 
+        Gets the incidence angle which is always positive. 
+        Since the perp vector can have two directions, flip is added to notify the user of this, 
+        which will be used for other calculations.
+        """
+        flip = False    #if flip is false then the perp_vec and ray.unit_vec have the same direction
+        incident_angle = f.angleBetweenUnitVectors(object.get_perp_vec(), ray_line.unit_vec)
+        if incident_angle > np.pi/2: #works since the incident angle should pick the closest perp_vector out the two.
+            incident_angle = np.pi-incident_angle
+            flip = True
+        return incident_angle, flip 
+
+    def refraction(self, ray_line, x_enter, y_enter, x_exit, y_exit, obj):
         """
         Makes a new ray_line based on the refraction of the ray.
         """
-
-        incident_angle,flip = f.angleBetweenUnitVectors(obj.get_perp_vec, ray_line.unit_vec)
-        new_angle = f.set_new_angle(ray_line, incident_angle,flip,obj)
-        self.set_new_line(x,y,new_angle)
+        ref_vec = f.Snells_law_vectors(ray_line, obj)
+        new_line = self.set_new_line(x_enter,y_enter,ref_vec)
+        new_line.set_name("refraction")
+        print("EXIT VALUE ==", x_exit, y_exit)
+        #gjelder bare for sirkeler
+        if x_exit is not None:
+            new_line.set_state(True)
+            incident_angle,flip = self.get_incidence_angle(new_line, obj, x_exit, y_exit)
+            new_line.set_state(False)
+            new_angle = f.set_new_angle(new_line, incident_angle,flip,obj)
+            new_line = self.set_new_line(x_exit,y_exit,new_angle)
+            new_line.set_name("refraction")
 
     def reflection(self,ray_line,x,y,obj):
         """
         Makes a new ray_line based on the reflection of the ray.
         """
-        incident_angle,flip = f.angleBetweenUnitVectors(obj.get_perp_vec, ray_line.unit_vec)
-        inv_ray_angle = f.Vec_angle(-ray_line.unit_vec)
-        obj_perp_angle = f.Vec_angle(obj.get_perp_vec(x,y))
-        if flip == True:
-            obj_perp_angle = f.Vec_angle(-obj.get_perp_vec(x,y)) #sett en getter for alle perp vektorer
-        reflection_angle = obj_perp_angle + incident_angle
-        print("reflection_angle = inv_ray_angle",reflection_angle, "==", inv_ray_angle)
-        if reflection_angle == inv_ray_angle:
-            reflection_angle = obj_perp_angle - incident_angle
-        self.set_new_line(x,y,reflection_angle)
+                # KAN BRUKE DETTE
+        cosI = np.dot(ray_line.unit_vec, obj.perp_vec)  #dette cos(incidence angle)
+        d_out = ray_line.unit_vec - 2.0*cosI*obj.perp_vec #dette gir den nye reflekterte vektoren
+        reflection_angle = f.Vec_angle(d_out)
+        print("vector out is: ", d_out)
+        print("reflection angle: ", reflection_angle)
+        new_line = self.set_new_line(x,y,d_out)
+        new_line.set_name("reflection")
 
-    def check_collision(self, objects):
+
+    def check_collision(self, ray_line, objects):
         """
-        Should check if the ray and the closest object collide. If they collide then there will be created a new line with angle
-        equal to the refraction line of the object.
+        Should check if the ray and objects collide. 
+        If they collide it returns 
+        [True, intersection_x, intersection_y, 
+        possible_intersection_x2, possible_intersection_y2, object].
         """
-        ray_line = self.get_last_line()
-        
-        for object in objects:
-            #sjekk kollisjoner med forskjellige objekter og vinkelene som man får ut fra disse.
-            collision = object.check_collision(ray_line)      #vegg kollisjon som tar inn linje objektet                START
+        for object in objects: 
+            collision = object.check_collision(ray_line)
             if collision[0]==True:
-                return collision    #returns this collison
-        return collision            #returns that no collision happened
+                print("collision[1] == ray_line.x0 and collision[2] == ray_line.y0\n", 
+                      collision[1], "==", ray_line.x0, collision[2], "==", ray_line.y0)
+                if collision[1] == ray_line.x0 and collision[2] == ray_line.y0:
+                    continue
+                return collision 
+        return False, None, None, None, None, None      
 
     def Calculated(self, objects):
         """
         Will calculate the projection of a ray and alter it if it collides with a object inside of the limits.
-        This uses check_collision which adds new lines to the ray
+        \nThis uses check_collision which adds new lines to the ray
         """
         coll = True
+        n = 0 
         while coll:
-            coll, x,y,obj = self.check_collision(objects) #this function should return a coll = false, if there is no collisions
-            if coll:
-                ray_line = self.get_last_line()
-                print(ray_line.unit_vec,obj.get_perp_vec(x,y))
-                break
-                self.refraction(ray_line,x,y,obj)
-                self.reflection(ray_line,x,y,obj)
+            print(self.line_list)
+            for ray_line in self.line_list:
+                coll, x_enter, y_enter, x_exit, y_exit, obj = self.check_collision(ray_line, objects) #this function should return a coll = false, if there is no collisions
+                if coll:
+                    self.retire_line(ray_line)
+                    self.remove_line(ray_line) #removes the ray_line from the list, since it should not interact with other objects anymore
+                    obj.set_perp_vec(x_enter,y_enter)
+                    self.refraction(ray_line, x_enter, y_enter, x_exit, y_exit, obj)
+                    self.reflection(ray_line, x_enter, y_enter, obj)
+                    n += 1
+                    if n > 99:
+                        coll = False
+                        print("Line_list = ", len(self.line_list))
+                        break
+        for line in self.line_list:
+            self.retire_line(line)
 

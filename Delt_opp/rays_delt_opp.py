@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import circle
-import ray
+import ray 
 import functions as f 
 import lines
 
-precision = 2000
+precision = 20000
 boarder_height = 1000
 boarder_width = 2000
 
@@ -17,18 +17,25 @@ if __name__ == "__main__":
     amount_of_rays = 1
     start_angle=0
     objects = []
-    circ = circle.Circle(500,500,1.5,100)
-    objects.append(circ)
-    ray1 = ray.Ray(0, 500, 0.1)
+    line1 = lines.Line(700, 200, 701, 800, 1.5, "green")
+    line2 = lines.Line(900, 200, 901, 800, 1.5, "green")
+    circ = circle.Circle(600,600,1.5,150)
+    objects.append(line1)
+    # objects.append(line2)
+    # objects.append(circ)
+    angle = 0.1 #rad
+    ray_unit_vec = np.array([np.cos(angle), np.sin(angle)])
+    ray1 = ray.Ray(0, 300, ray_unit_vec)
     ray1.Calculated(objects)
     plt.style.use('dark_background')
     fig = plt.figure(figsize=(20,10))
-    circ.plot()
+    for obj in objects:
+        obj.plot()
     ray1.plot()
     plt.xlim(0,boarder_width)
     plt.ylim(0, boarder_height)
     plt.legend()
-    plt.grid(True)
+    # plt.grid(True)
     plt.show()
 
 

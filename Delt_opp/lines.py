@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import functions as f
-precision = 2000
+precision = 20000
 boarder_height = 1000
 boarder_width = 2000
 
@@ -33,7 +33,39 @@ class Object_Line:
         self.x_list = np.linspace(self.x0,self.x1,int(self.x1-self.x0)) #x-list should be unecesary since enumerate of y_list gives the same
         self.y_list = self.a * self.x_list + self.b 
 
+    def set_perp_vec(self, x_enter, y_enter):
+        pass
 
+    def get_perp_vec(self):
+        return self.perp_vec
+
+    def plot(self):
+        plt.plot([self.x0, self.x1], [self.y0, self.y1], self.color)
+
+class Line(Object_Line):
+    def __init__(self, x0, y0, x1, y1, permativity, color):
+        super().__init__(x0, y0, x1, y1, permativity, color)
+
+    def line_Intersection(self, ray_line): #fiks denne
+        """
+        Returns the intersection between two linear lines, inside the limits of the object
+        """
+        if ray_line.a == self.a:                
+            return False, None, None
+        x = (ray_line.b - self.b)/(self.a - ray_line.a) #x-itersection
+        y = (self.a * x + self.b)                   #y-itersection
+        if x < 2000 and x > 0 and y < 2000 and y > 0:
+            print("Collision detected", x, y)
+            return True, x, y
+        else:
+            return False, None, None
+
+    def check_collision(self, ray_line):
+        coll, x_enter, y_enter = self.line_Intersection(ray_line)
+        if coll == True:
+            return coll, x_enter, y_enter, None, None, self
+        else:
+            return False, False, False, None, None, self 
 
 def Setup_walls(x0,y0,x1,y1,thickness,permativity,color):
     """
