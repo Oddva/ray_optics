@@ -15,14 +15,13 @@ class RayLine:
         self.color = color
         self.n = permativity
         self.unit_vec = unit_vec
-        print("Dette skal være enhetsvektoren: ", self.unit_vec)
+        # print("Dette skal være enhetsvektoren: ", self.unit_vec)
         self.angle = f.Vec_angle(self.unit_vec)
         self.x0 = x0
         self.y0 = y0
         self.norm = np.linalg.norm(self.unit_vec) #lenght of vector, should always be 1
         self.perp_vec = np.array([-self.unit_vec[1], self.unit_vec[0]]) 
         self.x_list = np.linspace(x0,self.unit_vec[0]*2000, precision) #x-list should be unecesary since enumerate of y_list gives the same
-        print(self.unit_vec[0])
         if self.unit_vec[0] < 0:
             self.x_list = np.linspace(x0, self.unit_vec[0]*2000, precision) 
         self.a = np.tan(self.angle)
@@ -42,6 +41,10 @@ class RayLine:
         """
         self.state = state
 
+    def change(self, x_enter, y_enter):        
+
+        self.x_list = np.array([x_enter, self.x0]) 
+        self.y_list = np.array([y_enter, self.y0])
 
 class Ray:
     """
@@ -97,8 +100,7 @@ class Ray:
         Removes a rat_line from the line list
         """
         self.line_list.remove(ray_line) #this does not involve indexing
-        # self.linelist.pop(0) #this returns the element removed
-        # del self.line_list[0] #this does not return the element removed
+
 
     def get_incidence_angle(self, ray_line, object, x, y):
         """
@@ -128,19 +130,23 @@ class Ray:
         """
         Makes a new ray_line based on the refraction of the ray.
         """
+        obj.set_perp_vec(x_enter, y_enter)
         ref_vec = f.Snells_law_vectors(ray_line, obj)
-        print("dette er ref_vec ", ref_vec)
         new_line = self.set_new_line(x_enter,y_enter,ref_vec)
         new_line.set_name("refraction")
-        print("EXIT VALUE ==", x_exit, y_exit)
         #gjelder bare for sirkeler
         if x_exit is not None:
-            new_line.set_state(True)
-            incident_angle,flip = self.get_incidence_angle(new_line, obj, x_exit, y_exit)
-            new_line.set_state(False)
-            new_angle = f.set_new_angle(new_line, incident_angle,flip,obj)
-            new_line = self.set_new_line(x_exit,y_exit,new_angle)
+            obj.set_perp_vec(x_exit, y_exit)
+            # new_line.set_state(True)
+            ref_vec = f.Snells_law_vectors(ray_line, obj)
+            new_line = self.set_new_line(x_exit, y_exit,ref_vec)
             new_line.set_name("refraction")
+
+            # incident_angle,flip = self.get_incidence_angle(new_line, obj, x_exit, y_exit)
+            # new_line.set_state(False)
+            # new_angle = f.set_new_angle(new_line, incident_angle,flip,obj)
+            # new_line = self.set_new_line(x_exit,y_exit,new_angle)
+            # new_line.set_name("refraction")
 
     def reflection(self,ray_line,x,y,obj):
         """
@@ -185,7 +191,8 @@ class Ray:
             for ray_line in self.line_list:
                 coll, x_enter, y_enter, x_exit, y_exit, obj = self.check_collision(ray_line, objects) #this function should return a coll = false, if there is no collisions
                 if coll:
-                    self.retire_line(ray_line) #should add a method to this which shortens the current ray, when reflection and refraction is made 
+                    ray_line.change(x_enter, y_enter)
+                    self.retire_line(ray_line) 
                     self.remove_line(ray_line) #removes the ray_line from the list, since it should not interact with other objects anymore
                     obj.set_perp_vec(x_enter,y_enter)
                     self.refraction(ray_line, x_enter, y_enter, x_exit, y_exit, obj)

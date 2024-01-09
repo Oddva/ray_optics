@@ -17,16 +17,16 @@ def Snells_law_vectors(ray_line, obj):
     vector way of doing snells law
     https://en.wikipedia.org/wiki/Snell%27s_law
     """
-    cosI = np.dot(ray_line.unit_vec, obj.perp_vec)  #dette cos(incidence angle)
+    cosI = np.dot(ray_line.unit_vec, obj.get_perp_vec())  #dette cos(incidence angle)
+    print("dette er cosI: ", cosI)
     r = ray_line.n / obj.n
-    refraction_vec = r*ray_line.unit_vec + (r*cosI - np.sqrt(1-(r**2 * (1-cosI))))*obj.perp_vec
+    refraction_vec = r*ray_line.unit_vec + (r*cosI - np.sqrt(1-(r**2 * (1-cosI))))*obj.get_perp_vec()
     return refraction_vec
 
 def Vec_angle(vector):
     """
     Returns angle of an unit vector with [x,y]
     """
-    print(vector)
     return np.arctan(vector[1]/vector[0])/(np.sqrt(vector[0]**2 + vector[1]**2))
 
 def angleBetweenUnitVectors(vec1, vec2):
