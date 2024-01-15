@@ -12,15 +12,16 @@ def Snells_law(theta_0, n_0, n_1):
     theta_1 = np.arcsin(np.sin(theta_0) * n_0/n_1)
     return theta_1, True
 
+
 def Snells_law_vectors(ray_line, obj):
     """
-    vector way of doing snells law
-    https://en.wikipedia.org/wiki/Snell%27s_law
+    Calculates snells_law using vectors \n
+    --------------------------------
+    Inspired by algorythm from https://en.wikipedia.org/wiki/Snell%27s_law
     """
-    cosI = np.dot(ray_line.unit_vec, obj.get_perp_vec())  #dette cos(incidence angle)
-    print("dette er cosI: ", cosI)
+    cosI = np.dot(obj.get_perp_vec(),-ray_line.unit_vec)
     r = ray_line.n / obj.n
-    refraction_vec = r*ray_line.unit_vec + (r*cosI - np.sqrt(1-(r**2 * (1-cosI))))*obj.get_perp_vec()
+    refraction_vec = r*ray_line.unit_vec + (r*cosI - np.sqrt(1-(r**2 * (1-cosI**2))))*obj.get_perp_vec()
     return refraction_vec
 
 def Vec_angle(vector):
@@ -76,22 +77,6 @@ def Point_line_distance(x,y,line_obj):
     """
     d = abs((line_obj.a*x + y + line_obj.b)/(np.sqrt(line_obj.a**2 + 1)))
     return d
-
-# def Boarder(y_list):
-#     """
-#     Returnere om en ray er innenfor området man ser på.
-#     Hvis man er innenfor returnerer den False, None
-#     Hvis man er utenfor returnere den True, n. Der n er hvilken iterasjon dette skjedde på.
-#     Denne funksjonen skal bestemme grensen der bølger stopper.\n
-#     Bølger stopper for x verdier allerede, men ikke for y verdier.\n
-#     Hvis en verdi går mot evig y verdi får man problemer.\n
-#     Denne klassen skal stoppe den hvis man får en y verdi over 1000.
-#     """
-#     for n,height in enumerate(y_list):
-#         if height < 0:
-#             return True, n #returnerer at den traff kanten av y grensa og hvilken iterasjon dette skjedde på
-#         if height > 1000:
-#             return True, n
 
 
 
